@@ -11,13 +11,17 @@ set(CMAKE_CXX_STANDARD 17)
 
 pico_sdk_init()
 
-add_executable(BGT60LTR11AIP main.cpp)
+add_executable(BGT60LTR11AIP 
+   main.cpp
+)
 
-target_link_libraries(BGT60LTR11AIP
+target_link_libraries(BGT60LTR11AIP PRIVATE
    pico_stdlib
    hardware_spi
    pico_cyw43_arch_none 
 )
+
+target_include_directories(BGT60LTR11AIP PRIVATE ./bgt60/)
 
 pico_add_extra_outputs(BGT60LTR11AIP)
 
