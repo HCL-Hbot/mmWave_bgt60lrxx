@@ -12,7 +12,7 @@ void init() {
 int main() {
     init();
     printf("START OF DEMO...\n");
-
+    driver.addr16
     for (;;) {
         printf("Looping...\n");
 
