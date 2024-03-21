@@ -94,42 +94,113 @@ struct REGISTER_FIELDS {
         static constexpr RegisterField PLL_PFD_RDT_SEL  = {0x0003, 0};
     };
 
-    struct Reg5 {
-        // Assuming pll_fcw occupies bits 0 to 7
+    struct REG5 {
         static constexpr RegisterField PLL_FCW = {0x0FFF, 0};
     };
 
-    struct Reg6 {
+    struct REG6 {
         static constexpr RegisterField PLL_LD_TW_SEL    = {0xE000, 0};
         static constexpr RegisterField PLL_LD_LEN       = {0x0010, 8};
         static constexpr RegisterField PLL_LD_EN        = {0x0008, 8};
     };
 
-    struct Reg7 {
+    struct REG7 {
         static constexpr RegisterField VCO2PLL_DLY      = {0x0001, 6};
         static constexpr RegisterField MPA2SH_DLY       = {0x0003, 4};
         static constexpr RegisterField PD_EN            = {0x0001, 3};
         static constexpr RegisterField MPA_CTRL         = {0x0007, 0};
     };
 
-    struct Reg8 {
+    struct REG8 {
         static constexpr RegisterField DIV_SEL = {0x0003, 2};
         static constexpr RegisterField DIV_OUT_EN = {0x0002, 1};
         static constexpr RegisterField DIV_TEST_MODE_EN = {0x0001, 0};
     };
 
-    struct Reg9 {
+    struct REG9 {
         static constexpr RegisterField BB_HP_RES        = {0x0001, 8};
         static constexpr RegisterField BB_CLK_CHOP_SEL  = {0x0001, 5};
         static constexpr RegisterField BB_LPF_BW        = {0x0001, 4};
         static constexpr RegisterField BB_CTRL_GAIN     = {0x000F, 0};
     };
 
-    struct Reg10 {
+    struct REG10 {
         static constexpr RegisterField HOLD = {0xFFFF, 0};
     };
 
+    struct REG12 {
+        static constexpr RegisterField BB_AMUX_CTRL     = {0x0003, 6}; 
+        static constexpr RegisterField BB_AMUX_EN       = {0x0001, 5}; 
+        static constexpr RegisterField BB_AMUX_PD_EN    = {0x0001, 4}; 
+        static constexpr RegisterField BITE_CTRL        = {0x000E, 0}; 
+        static constexpr RegisterField BB_AMUX_CTRL     = {0x0001, 0}; 
+    };
 
+    struct REG13 {
+        static constexpr RegisterField PHASE_WIN_LEN    = {0x0007, 5};
+        static constexpr RegisterField MEAN_WIN_LEN     = {0x0007, 2};
+        static constexpr RegisterField PRT_MULT         = {0x0003, 0};
+    };
+
+    struct REG14 {
+        static constexpr RegisterField THRS_OFFSET      = {0xFF00, 0}; 
+        static constexpr RegisterField DIR_HYS_DIS      = {0x0001, 7};
+        static constexpr RegisterField DIR_KEEP         = {0x0001, 6};
+        static constexpr RegisterField HOLD_X32         = {0x0001, 5};
+        static constexpr RegisterField SWAP_IQ          = {0x0001, 4};
+        static constexpr RegisterField AUTOBLIND_DIS    = {0x0001, 3};
+        static constexpr RegisterField PULSE_MON        = {0x0001, 2};
+        static constexpr RegisterField PHASE_THRS       = {0x0003, 0};
+    };
+
+    struct REG15 {
+        static constexpr RegisterField SOFT_RESET       = {0x0001, 15};
+        static constexpr RegisterField START_PM         = {0x0001, 14};
+        static constexpr RegisterField CLK_EXT_DIS      = {0x0001, 13};
+        static constexpr RegisterField START_CW         = {0x0001, 12};
+        static constexpr RegisterField FAST_PHASE       = {0x0001, 11};
+        static constexpr RegisterField DIR_C2_1         = {0x0600, 0};
+        static constexpr RegisterField FASTMODE         = {0x0001, 8};
+
+        static constexpr RegisterField ADC_MON          = {0x0001, 7};
+        static constexpr RegisterField MISO_DRV         = {0x0001, 6};
+        static constexpr RegisterField MOT_POL          = {0x0001, 5};
+        static constexpr RegisterField DIR_POL          = {0x0001, 4};
+        static constexpr RegisterField STAT_MUX         = {0x000F, 0};
+    };
+
+    struct REG34 {
+        static constexpr RegisterField ADC_ED = {0x0001, 2};
+        static constexpr RegisterField BANDGAP_EN = {0x0001, 1};
+        static constexpr RegisterField ADC_CLK_EN = {0x0001, 0};
+    };
+
+    struct REG35 {
+        static constexpr RegisterField LV_GAIN = {0x0001, 7};
+        static constexpr RegisterField CHNR_ALL = {0x0001, 4};
+        static constexpr RegisterField CHNR = {0x000F, 0};
+    };
+
+    struct REG36 {
+        static constexpr RegisterField ADC_READY = {0x0001, 1};
+        static constexpr RegisterField BANDGAP_UP = {0x0001, 0};
+    };
+
+
+    struct REG56 {
+        static constexpr RegisterField QS1_S = {0x0003, 14};
+        static constexpr RegisterField INIT_DONE = {0x0001, 13};
+        static constexpr RegisterField QS2_S = {0x0003, 11};
+        static constexpr RegisterField QS3_S = {0x0003, 9};
+        static constexpr RegisterField QS4_S = {0x0003, 6};
+        static constexpr RegisterField ADVANCED_MODE = {0x0001, 5};
+        static constexpr RegisterField PLL_LOCK_DETECT = {0x0001, 3};
+        static constexpr RegisterField CHIP_VERSION = {0x0003, 0};
+    };
+
+    struct GSPR0 {
+        static constexpr RegisterField ADC_RESULT_READY = {0x0001, 1};
+    };
 }
 } // End of BGT60 namespace. 
 #endif // BGT60LTR11XXX_REGS_HPP
