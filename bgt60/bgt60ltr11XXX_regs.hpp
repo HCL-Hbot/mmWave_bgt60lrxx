@@ -2,7 +2,10 @@
 #define BGT60LTR11XXX_REGS_HPP
 
 #include <stdint.h>
+#include <DeviceLtr11Types.h>
 
+/* Datasheet: https://www.infineon.com/dgdl/Infineon-Users_guide_to_BGT60LTR11SAIP-ApplicationNotes-v01_05-EN.pdf?fileId=8ac78c8c821f3890018268a7f22e1c54
+*/
 namespace BGT60 {
 
 typedef struct {

@@ -22,22 +22,38 @@ public:
     ~BGT60_DRIVER() {}
 
     // Initialize the BGT60LTR11AIP device
+    // Section 2.2.5 SPI mode sequence used: 
     void initialize_device() {
-        initialize_spi_interface();
+        REGISTER_ADDRESS reg15 = REGISTER_ADDRESS::REG15;
+
+        clearRegisterField(REGISTER_ADDRESS::REG1, REGISTER_FIELDS::REG1::QS_RD_EN); // Datasheet table 11.
+        setRegisterField(reg15, REGISTER_FIELDS::REG15::START_PM, 1); // Rising edge triggers CW mode (if bit 12 is set as well)
+        setRegisterField(reg15, REGISTER_FIELDS::REG15::START_CW, 1); //Changes behavior of bit 14 (“start_pm”) to start CW mode instead of pulsed mode (both can be set in same SPI-access)
+
     }
 
     // Functions to interact with the hardware
     static void setRegisterField(REGISTER_ADDRESS registerAddress, const RegisterField& field, uint16_t value) {
-        uint16_t regValue = 0x0000; // spi_read_register(static_cast<uint8_t>(registerAddress));
+        uint16_t regValue = spi_read_register(static_cast<uint8_t>(registerAddress));
         regValue = (regValue & ~(field.mask << field.shift)) | ((value & field.mask) << field.shift);
         spi_write_register(static_cast<uint8_t>(registerAddress), regValue);
     }
 
-    // static uint32_t getRegisterField(REGISTER_ADDRESS registerAddress, const RegisterField& field) {
-    //     uint32_t regAddr = static_cast<uint32_t>(registerAddress);
-    //     uint32_t regValue = readRegister(regAddr);
-    //     return getField(regValue, field);
-    // }
+    static void clearRegister(REGISTER_ADDRESS registerAddress) {
+        spi_write_register(static_cast<uint8_t>(registerAddress), 0x0000);
+    }
+
+    static void clearRegisterField(REGISTER_ADDRESS registerAddress, const RegisterField& field) {
+        uint16_t regValue = spi_read_register(static_cast<uint8_t>(registerAddress));
+        regValue &= ~(field.mask << field.shift);
+        spi_write_register(static_cast<uint8_t>(registerAddress), regValue);
+    }
+
+    static uint32_t getRegisterField(REGISTER_ADDRESS registerAddress, const RegisterField& field) {
+        uint32_t regAddr = static_cast<uint32_t>(registerAddress);
+        uint32_t regValue = spi_read_register(regAddr);
+        return getField(regValue, field);
+    }
 
 private:
     /* CLASS VARIABLES: */
@@ -81,7 +97,7 @@ private:
     }
 
     const static uint16_t spi_read_register(uint8_t reg) {
-        const uint8_t regAddr = (reg << 0x01) & 0xFE;
+        const uint8_t regAddr = (reg & 0x7F) | 0x80;
         const uint8_t data_to_send[3] = {regAddr, 0x00, 0x00};
         uint8_t received_data[2] = {0, 0};
 
@@ -93,7 +109,7 @@ private:
         return (received_data[0] << 8) | received_data[1];
     }
 
-    // Helper functions for field manipulation
+    /* Helper functions for field manipulation*/
     static constexpr uint16_t setField(uint16_t reg, RegisterField field, uint16_t value) {
         return (reg & ~field.mask) | ((value << field.shift) & field.mask);
     }
