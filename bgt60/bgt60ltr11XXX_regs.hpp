@@ -1,12 +1,12 @@
 #ifndef BGT60LTR11XXX_REGS_HPP
 #define BGT60LTR11XXX_REGS_HPP
 
-#include <stdint>
+#include <stdint.h>
 
 namespace BGT60 {
 
 typedef struct {
-    uint16_t clkFrequencyKHz;
+    uint16_t clkFrequencyMHz;
     uint8_t bitsPerTransfer;
 } SPIConfig_t;
 
@@ -32,6 +32,8 @@ enum class REGISTER_ADDRESS : uint8_t {
     REG34   = 0x22,     /* ADC Start */
     REG35   = 0x23,     /* ADC Convert */
     REG36   = 0x24,     /* ADC Status */
+    REG38   = 0x26,
+    REG_ADC_CHANNELS_START = 0x26,
     REG56   = 0x38,     /* Status and Chip Version */
     GSR0    = 0x39      /* SPI Status Register - Datasheet does not explicitly state this. */
 };
@@ -133,7 +135,7 @@ struct REGISTER_FIELDS {
         static constexpr RegisterField BB_AMUX_EN       = {0x0001, 5}; 
         static constexpr RegisterField BB_AMUX_PD_EN    = {0x0001, 4}; 
         static constexpr RegisterField BITE_CTRL        = {0x000E, 0}; 
-        static constexpr RegisterField BB_AMUX_CTRL     = {0x0001, 0}; 
+        static constexpr RegisterField BITE_EN          = {0x0001, 0}; 
     };
 
     struct REG13 {
@@ -186,6 +188,9 @@ struct REGISTER_FIELDS {
         static constexpr RegisterField BANDGAP_UP = {0x0001, 0};
     };
 
+    struct ADC_REGS {
+        static constexpr RegisterField ADC_RESULT = {0x03FFF, 0};
+    };
 
     struct REG56 {
         static constexpr RegisterField QS1_S = {0x0003, 14};
@@ -201,6 +206,30 @@ struct REGISTER_FIELDS {
     struct GSPR0 {
         static constexpr RegisterField ADC_RESULT_READY = {0x0001, 1};
     };
+};
+
+enum ADC_REG_CHANNELS {
+    POWER_SENSOR_MPA_OUTPUT     = 38,
+    POWER_SENSOR_MPAX_OUTPUT    = 39,
+    IFI                         = 40,
+    IFQ                         = 41,
+    POWER_SENSOR_BITE_PD_OUT    = 42,
+    POWER_SENSOR_BITE_PD_OUTX   = 43,
+    QS2                         = 44,
+    QS3                         = 45,
+    COMMON_MODE_VOLTAGE_IFI     = 46,
+    COMMON_MODE_VOLTAGE_IFQ     = 47,
+    VDD_RF_CLOSE_TO_SPI         = 48,
+    GND                         = 49,
+    TEMPERATURE_SENSOR          = 50,
+    PLL_BANDGAP_VOLTAGE         = 51,
+    ADC_BANDGAP_VOLTAGE         = 52,
+    ABB_BANDGAP_VOLTAGE         = 53
+};
+
+const constexpr uint8_t getAdcRegisterAddress(const ADC_REG_CHANNELS channel) {
+    return (static_cast<uint8_t>(REGISTER_ADDRESS::REG_ADC_CHANNELS_START) + static_cast<uint8_t>(channel - 38));
 }
+
 } // End of BGT60 namespace. 
 #endif // BGT60LTR11XXX_REGS_HPP
