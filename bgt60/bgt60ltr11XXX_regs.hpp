@@ -211,27 +211,27 @@ struct REGISTER_FIELDS {
     };
 };
 
-enum ADC_REG_CHANNELS {
-    POWER_SENSOR_MPA_OUTPUT     = 38,
-    POWER_SENSOR_MPAX_OUTPUT    = 39,
-    IFI                         = 40,
-    IFQ                         = 41,
-    POWER_SENSOR_BITE_PD_OUT    = 42,
-    POWER_SENSOR_BITE_PD_OUTX   = 43,
-    QS2                         = 44,
-    QS3                         = 45,
-    COMMON_MODE_VOLTAGE_IFI     = 46,
-    COMMON_MODE_VOLTAGE_IFQ     = 47,
-    VDD_RF_CLOSE_TO_SPI         = 48,
-    GND                         = 49,
-    TEMPERATURE_SENSOR          = 50,
-    PLL_BANDGAP_VOLTAGE         = 51,
-    ADC_BANDGAP_VOLTAGE         = 52,
-    ABB_BANDGAP_VOLTAGE         = 53
+enum ADC_REG_CHANNELS : uint8_t {
+    POWER_SENSOR_MPA_OUTPUT     = 0,
+    POWER_SENSOR_MPAX_OUTPUT    = 1,
+    IFI                         = 2,
+    IFQ                         = 3,
+    POWER_SENSOR_BITE_PD_OUT    = 4,
+    POWER_SENSOR_BITE_PD_OUTX   = 5,
+    QS2                         = 6,
+    QS3                         = 7,
+    COMMON_MODE_VOLTAGE_IFI     = 8,
+    COMMON_MODE_VOLTAGE_IFQ     = 9,
+    VDD_RF_CLOSE_TO_SPI         = 10,
+    GND                         = 11,
+    TEMPERATURE_SENSOR          = 12,
+    PLL_BANDGAP_VOLTAGE         = 13,
+    ADC_BANDGAP_VOLTAGE         = 14,
+    ABB_BANDGAP_VOLTAGE         = 15
 };
 
 const constexpr uint8_t getAdcRegisterAddress(const ADC_REG_CHANNELS channel) {
-    return (static_cast<uint8_t>(REGISTER_ADDRESS::REG_ADC_CHANNELS_START) + static_cast<uint8_t>(channel - 38));
+    return (static_cast<uint8_t>(REGISTER_ADDRESS::REG_ADC_CHANNELS_START) + static_cast<uint8_t>(channel));
 }
 
 } // End of BGT60 namespace. 
