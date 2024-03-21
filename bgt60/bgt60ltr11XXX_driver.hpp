@@ -2,7 +2,7 @@
 #define BGT60LTR11XXX_DRIVER_HPP
 
 #include "hardware/spi.h"
-
+#include "bgt60ltr11XXX_regs.hpp"
 // Define SPI port
 #define SPI_PORT    spi0
 #define SPI_SCK     2  // SPI Clock
@@ -11,11 +11,6 @@
 #define SPI_CS      5  // Chip Select (CS)
 
 namespace BGT60 {
-
-typedef struct {
-    uint16_t clkFrequencyKHz;
-    uint8_t bitsPerTransfer;
-} SPIConfig_t;
 
 class BGT60_DRIVER {
 public:
@@ -38,15 +33,15 @@ private:
 
     /* CLASS FUNCTIONS: */
     // Initialize SPI inteface: Reference User Manual: 3.1.1
-    static inline void initialize_spi_interface() {
+    static void initialize_spi_interface() {
         const uint8_t dataFieldSize = spi_config.bitsPerTransfer;
         const uint16_t busFrequency = spi_config.clkFrequencyKHz;
 
         spi_init(SPI_PORT, busFrequency);
         spi_set_format(SPI_PORT, 
             dataFieldSize, 
-            SPI_CPOL_0, // Clock low in idle.
-            SPI_CPHA_0, // CLock phase rising. 
+            SPI_CPOL_0,         // Clock low in idle.
+            SPI_CPHA_0,         // CLock phase rising. 
             SPI_MSB_FIRST); 
 
         gpio_set_function(SPI_MISO, GPIO_FUNC_SPI);
@@ -59,7 +54,7 @@ private:
         gpio_put(SPI_CS, 1);
     }
 
-    static inline void spi_write_register(uint8_t reg, uint16_t value) {
+    static inline void spi_write_register(const uint8_t reg, const uint16_t value) {
         uint8_t data_to_send[3];
         data_to_send[0] = (reg << 1) | 0x01;
         data_to_send[1] = (value >> 8) & 0xFF;
@@ -70,7 +65,7 @@ private:
         gpio_put(SPI_CS, 1);
     }
 
-    const static inline uint16_t spi_read_register(uint8_t reg) {
+    const static uint16_t spi_read_register(uint8_t reg) {
         const uint8_t regAddr = (reg << 0x01) & 0xFE;
         const uint8_t data_to_send[3] = {regAddr, 0x00, 0x00};
         uint8_t received_data[2] = {0, 0};

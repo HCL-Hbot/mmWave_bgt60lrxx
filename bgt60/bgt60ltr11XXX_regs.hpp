@@ -10,6 +10,11 @@ typedef struct {
     uint8_t bitsPerTransfer;
 } SPIConfig_t;
 
+struct RegisterField {
+    uint16_t mask;
+    uint16_t shift;
+};
+
 enum class REGISTER_ADDRESS : uint8_t {
     REG1    = 0x01,     /* Direct Access Register */
     REG2    = 0x02,     /* Threshold Configuration */
@@ -31,5 +36,15 @@ enum class REGISTER_ADDRESS : uint8_t {
     GSR0    = 0x39      /* SPI Status Register - Datasheet does not explicitly state this. */
 };
 
+struct REGISTER_FIELDS {
+    struct Reg0 {
+        static constexpr RegisterField PLL_EN           = {0x0001, 0};
+        static constexpr RegisterField PLL_ACTIVE       = {0x0002, 0};
+        static constexpr RegisterField PLL_CLK_GATE_EN  = {0x0004, 0};
+        static constexpr RegisterField PLL_OPEN_LOOP    = {0x0008, 0};
+        static constexpr RegisterField VCO_EN           = {0x0010, 0};
+        static constexpr RegisterField VCOBUF_EN        = {0x0020, 0};
+    };
+}
 } // End of BGT60 namespace. 
 #endif // BGT60LTR11XXX_REGS_HPP
