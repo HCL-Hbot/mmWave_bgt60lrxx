@@ -59,6 +59,28 @@ public:
         return getField(regValue, field);
     }
 
+    static uint16_t getVariable_I() {
+        ADC_REG_CHANNELS channel = ADC_REG_CHANNELS::IFI;
+        uint16_t result = 0; 
+
+        EnableADC();
+        StartAD_ChannelConversion(channel);
+        while (!CheckADC_ResultFlag); 
+        result = ReadAD_ChannelResult(channel);
+        return result;
+    }
+
+    static uint16_t getVariable_Q() {
+        ADC_REG_CHANNELS channel = ADC_REG_CHANNELS::IFQ;
+        uint16_t result = 0; 
+
+        EnableADC();
+        StartAD_ChannelConversion(channel);
+        while (!CheckADC_ResultFlag); 
+        result = ReadAD_ChannelResult(channel);
+        return result;
+    }
+
 protected:
 
     static void EnableADC() {
@@ -99,14 +121,22 @@ protected:
         setRegisterField(REGISTER_ADDRESS::REG35, REGISTER_FIELDS::REG35::CHNR_ALL, 0);
     }
 
-    static inline uint16_t ReadAD_ChannelResult(ADC_REG_CHANNELS channel) {
-        uint16_t result_ready_flag = getRegisterField(REGISTER_ADDRESS::GSR0, REGISTER_FIELDS::GSPR0::ADC_RESULT_READY);
+    static uint16_t ReadAD_ChannelResult(ADC_REG_CHANNELS channel) {
+        bool result_ready_flag = CheckADC_ResultFlag;
         if (result_ready_flag) {
             const uint8_t result_reg = getAdcRegisterAddress(channel);
             uint16_t channel_result = getRegisterField(static_cast<REGISTER_ADDRESS>(result_reg), REGISTER_FIELDS::ADC_REGS::ADC_RESULT);
             return channel_result;
         }
         return 0; // Default for channel result not read.
+    }
+
+    const static inline uint8_t CheckADC_ResultFlag() {
+        const uint16_t result_ready_flag = getRegisterField(REGISTER_ADDRESS::GSR0, REGISTER_FIELDS::GSPR0::ADC_RESULT_READY);
+        if (result_ready_flag) {
+            return 1;
+        }
+        return 0;
     }
 
 private:
