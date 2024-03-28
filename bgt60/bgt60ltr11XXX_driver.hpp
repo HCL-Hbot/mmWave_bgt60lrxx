@@ -7,7 +7,7 @@
 
 // Define SPI port
 #define SPI_PORT    spi0
-#define SPI_SCK     2  // SPI Clock
+#define SPI_SCK     6  // SPI Clock
 #define SPI_MOSI    3  // Master Out Slave In (MOSI)
 #define SPI_MISO    4  // Master In Slave Out (MISO)
 #define SPI_CS      5  // Chip Select (CS)
@@ -24,8 +24,13 @@ public:
 
     // Initialize the BGT60LTR11AIP device
     // Section 2.2.5 SPI mode sequence used: 
-    static void initialize_device() {
+    static void configureRadar() {
         REGISTER_ADDRESS reg15 = REGISTER_ADDRESS::REG15;
+
+        // uint16_t init_status = 0;
+        // do {
+        //     init_status = getRegisterField(REGISTER_ADDRESS::REG56, REGISTER_FIELDS::REG56::INIT_DONE);
+        // } while (init_status == 0);
 
         // 1 Init for SPI mode
         clearRegisterField(REGISTER_ADDRESS::REG1, REGISTER_FIELDS::REG1::QS_RD_EN); // Datasheet table 11.
@@ -59,38 +64,35 @@ public:
         return getField(regValue, field);
     }
 
-    static uint16_t getVariable_I() {
-        ADC_REG_CHANNELS channel = ADC_REG_CHANNELS::IFI;
-        uint16_t result = 0; 
-
-        EnableADC();
-        StartAD_ChannelConversion(channel);
-        while (!CheckADC_ResultFlag); 
-        result = ReadAD_ChannelResult(channel);
-        return result;
+    static uint16_t getRegisterField(uint8_t registerAddress, const RegisterField& field) {
+        uint8_t regAddr = (registerAddress);
+        uint16_t regValue = spi_read_register(regAddr);
+        return getField(regValue, field);
     }
 
-    static uint16_t getVariable_Q() {
-        ADC_REG_CHANNELS channel = ADC_REG_CHANNELS::IFQ;
-        uint16_t result = 0; 
+    // static uint16_t getVariable_I() {
+    //     ADC_REG_CHANNELS channel = ADC_REG_CHANNELS::IFI;
+    //     uint16_t result = 0; 
 
-        EnableADC();
-        StartAD_ChannelConversion(channel);
-        while (!CheckADC_ResultFlag); 
-        result = ReadAD_ChannelResult(channel);
-        return result;
-    }
+    //     EnableADC();
+    //     StartAD_ChannelConversion(channel);
+    //     while (!CheckADC_ResultFlag); 
+    //     result = ReadAD_ChannelResult(channel);
+    //     return result;
+    // }
 
 protected:
 
     static void EnableADC() {
         REGISTER_ADDRESS reg34 = REGISTER_ADDRESS::REG34;
+        REGISTER_ADDRESS reg36 = REGISTER_ADDRESS::REG36;
+
         setRegisterField(reg34, REGISTER_FIELDS::REG34::BANDGAP_EN, 1);
         setRegisterField(reg34, REGISTER_FIELDS::REG34::ADC_CLK_EN, 1);
         
         uint16_t bandgap_up_flag = 0;
         do {
-            bandgap_up_flag = getRegisterField(reg34, REGISTER_FIELDS::REG34::BANDGAP_EN);
+            bandgap_up_flag = getRegisterField(reg36, REGISTER_FIELDS::REG36::BANDGAP_UP);
         } while (bandgap_up_flag != 1);
 
         setRegisterField(reg34, REGISTER_FIELDS::REG34::ADC_ED, 1);
@@ -108,7 +110,7 @@ protected:
         return 1; // ADC is not on.
     }
 
-    static void StartAD_ChannelConversion(ADC_REG_CHANNELS channel) {
+    static void StartAD_SingleChannelConversion(ADC_REG_CHANNELS channel) {
         REGISTER_ADDRESS reg36 = REGISTER_ADDRESS::REG36;
         uint8_t adc_ready_flag = 0;
         uint8_t channel_integer = static_cast<uint8_t>(channel);
@@ -117,11 +119,22 @@ protected:
             adc_ready_flag = getRegisterField(reg36, REGISTER_FIELDS::REG36::ADC_READY);
         } while (adc_ready_flag != 1); 
 
-        setRegisterField(REGISTER_ADDRESS::REG35, REGISTER_FIELDS::REG35::CHNR_ALL, channel_integer);
-        setRegisterField(REGISTER_ADDRESS::REG35, REGISTER_FIELDS::REG35::CHNR_ALL, 0);
+        setRegisterField(REGISTER_ADDRESS::REG35, REGISTER_FIELDS::REG35::CHNR, channel_integer);
     }
 
-    static uint16_t ReadAD_ChannelResult(ADC_REG_CHANNELS channel) {
+    // All AD Channels are converted sequentially: 
+    static void StartAD_SequentialConversion() {
+        REGISTER_ADDRESS reg36 = REGISTER_ADDRESS::REG36;
+        uint8_t adc_ready_flag = 0;
+
+        do {
+            adc_ready_flag = getRegisterField(reg36, REGISTER_FIELDS::REG36::ADC_READY);
+        } while (adc_ready_flag != 1); 
+
+        setRegisterField(REGISTER_ADDRESS::REG35, REGISTER_FIELDS::REG35::CHNR_ALL, 1);
+    }
+
+    const static uint16_t ReadAD_SingleChannelResult(ADC_REG_CHANNELS channel) {
         bool result_ready_flag = CheckADC_ResultFlag;
         if (result_ready_flag) {
             const uint8_t result_reg = getAdcRegisterAddress(channel);
@@ -129,6 +142,26 @@ protected:
             return channel_result;
         }
         return 0; // Default for channel result not read.
+    }
+    
+    // Currenty the naming is misleading || The function is not implemented completely.
+    static AdcIFResults ReadAD_SequentialResults() {
+        const bool result_ready_flag = CheckADC_ResultFlag();
+        AdcIFResults results = {0, 0, 0, 0}; // Initialize all fields to 0
+        if (result_ready_flag) {
+
+            RegisterField field = REGISTER_FIELDS::ADC_REGS::ADC_RESULT;
+            const static uint8_t addrQ = getAdcRegisterAddress(ADC_REG_CHANNELS::IFQ);
+            const static uint8_t addrI = getAdcRegisterAddress(ADC_REG_CHANNELS::IFI);
+            const static uint8_t addrCMI = getAdcRegisterAddress(ADC_REG_CHANNELS::COMMON_MODE_VOLTAGE_IFI);
+            const static uint8_t addrCMQ = getAdcRegisterAddress(ADC_REG_CHANNELS::COMMON_MODE_VOLTAGE_IFQ);
+
+            results.IF_Q = field.mask & (field.shift >> getRegisterField(addrQ, REGISTER_FIELDS::ADC_REGS::ADC_RESULT));
+            results.IF_I = field.mask & (field.shift >> getRegisterField(addrI, REGISTER_FIELDS::ADC_REGS::ADC_RESULT));
+            results.CMV_IFQ = field.mask & (field.shift >> getRegisterField(addrCMI, REGISTER_FIELDS::ADC_REGS::ADC_RESULT));
+            results.CMV_IFI = field.mask & (field.shift >> getRegisterField(addrCMQ, REGISTER_FIELDS::ADC_REGS::ADC_RESULT));
+        }
+        return results;
     }
 
     const static inline uint8_t CheckADC_ResultFlag() {
@@ -167,10 +200,10 @@ private:
     }
 
     static void spi_write_register(const uint8_t reg, const uint16_t value) {
-        uint8_t data_to_send[3];
+        uint8_t data_to_send[3] = {0,0,0};
         
         // 7-bit address + RW bit set to 1 for write operation
-        data_to_send[0] = (reg & 0x7F) | 0x80;
+        data_to_send[0] = ((reg & 0x7F) << 0x01) | 0x01;
         // 16-bit payload sent MSB first
         data_to_send[1] = (value >> 8) & 0xFF; // MSB of the value to write
         data_to_send[2] = value & 0xFF;        // LSB of the value to write
@@ -180,17 +213,16 @@ private:
         gpio_put(SPI_CS, 1);
     }
 
-    const static uint16_t spi_read_register(uint8_t reg) {
-        const uint8_t regAddr = (reg & 0x7F) | 0x80;
-        const uint8_t data_to_send[3] = {regAddr, 0x00, 0x00};
-        uint8_t received_data[2] = {0, 0};
+    const static uint16_t spi_read_register(uint8_t registerAddr) {
+        const uint8_t spiAddr = ((registerAddr & 0x7F) << 0x01) & ~(0x01);
+        uint8_t received_data[3] = {0, 0, 0};
 
         gpio_put(SPI_CS, 0);
-        spi_write_blocking(SPI_PORT, data_to_send, 1);
+        spi_write_blocking(SPI_PORT, &spiAddr, 1);
         spi_read_blocking(SPI_PORT, 0, received_data, 2);
         gpio_put(SPI_CS, 1); 
 
-        return (received_data[0] << 8) | received_data[1];
+        return ((received_data[0] << 8) | received_data[1]);
     }
 
     /* Helper functions for field manipulation*/

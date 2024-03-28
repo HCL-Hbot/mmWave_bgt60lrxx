@@ -8,6 +8,13 @@
 */
 namespace BGT60 {
 
+struct AdcIFResults {
+    uint8_t IF_Q;
+    uint8_t IF_I;
+    uint8_t CMV_IFI;
+    uint8_t CMV_IFQ;
+};
+
 typedef struct {
     uint16_t clkFrequencyMHz;
     uint8_t bitsPerTransfer;
@@ -192,7 +199,7 @@ struct REGISTER_FIELDS {
     };
 
     struct ADC_REGS {
-        static constexpr RegisterField ADC_RESULT = {0x03FFF, 0};
+        static constexpr RegisterField ADC_RESULT = {0x00FF, 2};
     };
 
     struct REG56 {

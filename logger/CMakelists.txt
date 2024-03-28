@@ -1,0 +1,5 @@
+add_library(IQ_LOG INTERFACE)
+
+target_include_directories(IQ_LOG INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+
+# target_link_libraries(IQ_LOG INTERFACE)
